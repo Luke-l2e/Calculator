@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,15 +39,17 @@ class MainActivity : ComponentActivity() {
             CalculatorTheme {
 
                 var numberX by remember {
-                    mutableStateOf("numberX")
+                    mutableStateOf("")
                 }
                 var numberY by remember {
-                    mutableStateOf("numberY")
+                    mutableStateOf("")
                 }
                 var operator by remember {
                     mutableStateOf("")
                 }
-                var result by remember { mutableStateOf("") }
+                var result by remember {
+                    mutableStateOf("")
+                }
 
                 // A surface container using the 'background' color from the theme
                 Column(
@@ -71,9 +74,11 @@ class MainActivity : ComponentActivity() {
                         TextField(
                             value = numberX,
                             onValueChange = {
-                                numberX
+                                numberX = it
                             },
-                            Modifier.fillMaxWidth(),
+                            Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged() { println("Focused test") },
                             singleLine = true,
                             //placeholder = "Test"
                         )
@@ -99,10 +104,11 @@ class MainActivity : ComponentActivity() {
                     }
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .background(Color.Blue),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = result)
+                        Text(color = Color.White, text = result)
                     }
                     Row() {
                         Button(
@@ -159,7 +165,98 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     Row() {
-                        solve(numberX, numberY, operator)
+                        Box() {
+                            Button(onClick = {
+                                if (numberX.isEmpty()) {
+                                    numberX = Math.PI.toString()
+                                } else if (numberY.isEmpty()) {
+                                    numberY = Math.PI.toString()
+                                } else {
+                                    numberX = Math.PI.toString()
+                                }
+
+                            }) {
+                                Text("Pi")
+                            }
+                        }
+                    }
+                    Row() {
+                        var x: Double
+                        var y: Double
+                        val context = LocalContext.current
+                        Button(
+                            onClick = {
+                                if (numberX.isEmpty()) {
+                                    Toast.makeText(
+                                        context,
+                                        "Error - First number is missing",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    return@Button
+                                } else if (numberY.isEmpty()) {
+                                    Toast.makeText(
+                                        context,
+                                        "Error - Second number is missing",
+                                        Toast.LENGTH_LONG
+                                    )
+                                        .show()
+                                    return@Button
+                                } else if (operator.isEmpty()) {
+                                    Toast.makeText(
+                                        context,
+                                        "Error - Please select an operator",
+                                        Toast.LENGTH_LONG
+                                    )
+                                        .show()
+                                    return@Button
+                                }
+
+                                try {
+                                    x = numberX.toDouble()
+                                } catch (e: NumberFormatException) {
+                                    Toast.makeText(
+                                        context,
+                                        "Error - First input contains an unknown input",
+                                        Toast.LENGTH_LONG
+                                    )
+                                        .show()
+                                    return@Button
+                                }
+                                try {
+                                    y = numberY.toDouble()
+                                } catch (e: NumberFormatException) {
+                                    Toast.makeText(
+                                        context,
+                                        "Error - Second input contains an unknown input",
+                                        Toast.LENGTH_LONG
+                                    )
+                                        .show()
+                                    return@Button
+                                }
+                                Toast.makeText(
+                                    context,
+                                    "success - Setting convert to true",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                if (operator == "+") {
+                                    result = (x + y).toString()
+                                } else if (operator == "-") {
+                                    result = (x - y).toString()
+                                } else if (operator == "*") {
+                                    result = (x * y).toString()
+                                } else {
+                                    result = (x / y).toString()
+                                }
+
+                            },
+                            Modifier
+                                .padding(vertical = 20.dp)
+
+                        ) {
+                            Text(text = "=")
+                        }
+
+                        // result = solve(numberX, numberY, operator)
                     }
 
 
@@ -173,62 +270,9 @@ class MainActivity : ComponentActivity() {
 
 }
 
-@Composable
-fun solve(numberX: String, numberY: String, operator: String) {
-    var x: Double
-    var y: Double
-    val context = LocalContext.current
-    Button(
-        onClick = {
-            if (numberX.isEmpty()) {
-                Toast.makeText(context, "Error - First number is missing", Toast.LENGTH_LONG).show()
-            } else if (numberY.isEmpty()) {
-                Toast.makeText(context, "Error - Second number is missing", Toast.LENGTH_LONG)
-                    .show()
-            } else if (operator.isEmpty()) {
-                Toast.makeText(context, "Error - Please select an operator", Toast.LENGTH_LONG)
-                    .show()
-            }
-
-            try {
-                x = numberX.toDouble()
-            } catch (e: NumberFormatException) {
-                Toast.makeText(
-                    context,
-                    "Error - First input contains an unknown input",
-                    Toast.LENGTH_LONG
-                )
-                    .show()
-            }
-            try {
-                y = numberY.toDouble()
-            } catch (e: NumberFormatException) {
-                Toast.makeText(
-                    context,
-                    "Error - Second input contains an unknown input",
-                    Toast.LENGTH_LONG
-                )
-                    .show()
-            }
-        },
-        Modifier
-            .padding(vertical = 20.dp)
-
-    ) {
-        Text(text = "=")
-    }
-
-
-}
-
-@Composable
-fun clear() {
-
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting() {
     var test by remember { mutableStateOf("") }
     TextField(
         value = test,
@@ -242,6 +286,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     CalculatorTheme {
-        Greeting("Android")
+        Greeting()
     }
 }
