@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
                                 numberX = ""
                                 numberY = ""
                                 operator = ""
+                                result = ""
                             },
                             Modifier
                                 .padding(vertical = 20.dp)
