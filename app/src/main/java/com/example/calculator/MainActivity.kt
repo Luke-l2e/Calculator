@@ -23,13 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.calculator.ui.theme.CalculatorTheme
-import java.lang.NumberFormatException
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +36,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             CalculatorTheme {
 
+                val BACKGROUND_COLOR = Color.DarkGray
                 var numberX by remember {
                     mutableStateOf("")
                 }
@@ -55,9 +54,8 @@ class MainActivity : ComponentActivity() {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .background(Color.Red)
-                        .padding(10.dp)
-                        .background(Color.Green),
+                        .background(BACKGROUND_COLOR)
+                        .padding(20.dp),
 
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -67,8 +65,7 @@ class MainActivity : ComponentActivity() {
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Magenta),
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         TextField(
@@ -77,18 +74,17 @@ class MainActivity : ComponentActivity() {
                                 numberX = it
                             },
                             Modifier
-                                .fillMaxWidth()
-                                .onFocusChanged() { println("Focused test") },
-                            singleLine = true,
+                                .fillMaxWidth(),
+                            singleLine = true
                             //placeholder = "Test"
                         )
                     }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = operator)
+                        Text(text = operator, color = Color.White)
                     }
                     Box(
                         modifier = Modifier
@@ -104,13 +100,14 @@ class MainActivity : ComponentActivity() {
                     }
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Blue),
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(color = Color.White, text = result)
                     }
-                    Row() {
+                    Row(
+                        modifier = Modifier.padding(5.dp)
+                    ) {
                         Button(
                             onClick = {
                                 numberX = ""
@@ -164,23 +161,23 @@ class MainActivity : ComponentActivity() {
                             Text(text = "/")
                         }
                     }
-                    Row() {
-                        Box() {
-                            Button(onClick = {
-                                if (numberX.isEmpty()) {
-                                    numberX = Math.PI.toString()
-                                } else if (numberY.isEmpty()) {
-                                    numberY = Math.PI.toString()
-                                } else {
-                                    numberX = Math.PI.toString()
-                                }
+                    Row {
 
-                            }) {
-                                Text("Pi")
+                        Button(onClick = {
+                            if (numberX.isEmpty()) {
+                                numberX = Math.PI.toString()
+                            } else if (numberY.isEmpty()) {
+                                numberY = Math.PI.toString()
+                            } else {
+                                numberX = Math.PI.toString()
                             }
+
+                        }) {
+                            Text("Pi")
                         }
+
                     }
-                    Row() {
+                    Row {
                         var x: Double
                         var y: Double
                         val context = LocalContext.current
@@ -233,11 +230,7 @@ class MainActivity : ComponentActivity() {
                                         .show()
                                     return@Button
                                 }
-                                Toast.makeText(
-                                    context,
-                                    "success - Setting convert to true",
-                                    Toast.LENGTH_LONG
-                                ).show()
+
                                 if (operator == "+") {
                                     result = (x + y).toString()
                                 } else if (operator == "-") {
