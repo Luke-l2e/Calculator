@@ -1,4 +1,4 @@
-package com.example.calculator.ui.theme
+package de.hhn.calculator.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
