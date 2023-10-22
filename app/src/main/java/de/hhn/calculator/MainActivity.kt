@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,14 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -37,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import de.hhn.calculator.ui.theme.CalculatorTheme
+import java.text.DecimalFormat
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -51,43 +49,32 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CalculatorTheme {
-                val COLOR_BACKGROUND = Color.DarkGray
-                val COLOR_ITEM = Color(4, 121, 201)
-                val COLOR_FOCUS = Color(255, 140, 0)
-
+                var colors by remember {
+                    mutableStateOf(Colors())
+                }
+                var operators by remember {
+                    mutableStateOf(Operators())
+                }
+                var textFieldValues by remember { mutableStateOf(TextFieldValues()) }
                 val context = LocalContext.current
-                var numberX by remember {
-                    mutableStateOf("")
-                }
-                var numberY by remember {
-                    mutableStateOf("")
-                }
-                var operator by remember {
-                    mutableStateOf("")
-                }
-                var result by remember {
-                    mutableStateOf("")
-                }
                 val buttonColors = ButtonDefaults.buttonColors(
-                    containerColor = COLOR_ITEM
+                    containerColor = colors.item
                 )
                 val buttonModifier: Modifier = Modifier
-
-                // A surface container using the 'background' color from the theme
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .background(COLOR_BACKGROUND)
+                        .background(colors.background)
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom,
                 )
                 {
                     TextField(
-                        value = numberX,
+                        value = textFieldValues.numberX,
                         onValueChange = {
                             if (it.isBlank()) {
-                                numberX = ""
+                                textFieldValues = textFieldValues.copy(numberX = "")
                                 return@TextField
                             }
                             var value: Double
@@ -101,7 +88,7 @@ class MainActivity : ComponentActivity() {
                                     .show()
                                 return@TextField
                             }
-                            numberX = it
+                            textFieldValues = textFieldValues.copy(numberX = it)
                         },
                         Modifier
                             .fillMaxWidth(),
@@ -116,24 +103,46 @@ class MainActivity : ComponentActivity() {
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = TextFieldDefaults.textFieldColors(
-                            containerColor = COLOR_BACKGROUND,
-                            unfocusedIndicatorColor = COLOR_ITEM,
-                            focusedIndicatorColor = COLOR_FOCUS
+                            containerColor = colors.background,
+                            unfocusedIndicatorColor = colors.item,
+                            focusedIndicatorColor = colors.focus
                         )
                     )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // TODO : Workaround instead of 0.    id = 0 -> crash
+                        if (textFieldValues.operator != operators.EMPTY) {
+                            Icon(
+                                painter = painterResource(id = textFieldValues.operator),
+                                contentDescription = "Multiplication",
+                                tint = colors.font
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = operators.addition),
+                                contentDescription = "Multiplication",
+                                tint = colors.font,
+                                modifier = Modifier.alpha(0.0f)
+                            )
+                        }
 
-                    Text(
-                        text = operator,
-                        color = Color.White,
-                        fontSize = 14.em,
-                        textAlign = TextAlign.Center,
-                    )
+                    }
+
+
+//                    Text(
+//                        text = textFieldValues.operator.toString(),
+//                        color = Color.White,
+//                        fontSize = 9.em,
+//                        textAlign = TextAlign.Center,
+//                    )
 
                     TextField(
-                        value = numberY,
+                        value = textFieldValues.numberY,
                         onValueChange = {
                             if (it.isBlank()) {
-                                numberY = ""
+                                textFieldValues = textFieldValues.copy(numberY = "")
                                 return@TextField
                             }
                             var value: Double
@@ -147,7 +156,7 @@ class MainActivity : ComponentActivity() {
                                     .show()
                                 return@TextField
                             }
-                            numberY = it
+                            textFieldValues = textFieldValues.copy(numberY = it)
                         },
                         Modifier
                             .fillMaxWidth(),
@@ -163,17 +172,29 @@ class MainActivity : ComponentActivity() {
                         textStyle = TextStyle(color = Color.White),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = TextFieldDefaults.textFieldColors(
-                            containerColor = COLOR_BACKGROUND,
-                            unfocusedIndicatorColor = COLOR_ITEM,
-                            focusedIndicatorColor = COLOR_FOCUS
+                            containerColor = colors.background,
+                            unfocusedIndicatorColor = colors.item,
+                            focusedIndicatorColor = colors.focus
                         )
                     )
 
-                    Text(
-                        text = result,
-                        color = Color.White,
-                        fontSize = 12.em,
-                        textAlign = TextAlign.Start
+                    TextField(
+                        value = textFieldValues.result,
+                        onValueChange = {},
+                        Modifier
+                            .fillMaxWidth(),
+                        singleLine = true,
+                        readOnly = true,
+                        textStyle = TextStyle(
+                            color = Color.White,
+                            textAlign = TextAlign.Right,
+                            fontSize = 10.em
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = colors.background,
+                            unfocusedIndicatorColor = colors.background,
+                            focusedIndicatorColor = colors.background
+                        )
                     )
 
                     Row(
@@ -183,75 +204,92 @@ class MainActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .height(105.dp)
                     ) {
-                        OutlinedButton(
+                        Button(
                             onClick = {
-                                numberX = ""
-                                numberY = ""
-                                operator = ""
-                                result = ""
+                                textFieldValues = TextFieldValues()
                             },
                             buttonModifier,
-                            border = BorderStroke(5.dp, COLOR_ITEM),
-                            colors = buttonColors,
-                            shape = CircleShape
+                            shape = CircleShape,
+                            colors = buttonColors
                         ) {
+                            // TODO : Class operators to Symbols
                             Icon(
-                                Icons.Default.Clear,
-                                contentDescription = "Clear content"
+                                painter = painterResource(id = R.drawable.baseline_restart_alt_24),
+                                contentDescription = "Clear content",
+                                tint = colors.font
                             )
                         }
                         Button(
                             onClick = {
-                                operator = "+"
+                                textFieldValues =
+                                    textFieldValues.copy(operator = operators.addition)
                             },
                             buttonModifier,
                             shape = CircleShape,
                             colors = buttonColors
                         ) {
                             Icon(
-                                Icons.Default.Add,
+                                painter = painterResource(id = operators.addition),
                                 contentDescription = "Addition",
-                                tint = Color.White
+                                tint = colors.font
                             )
                         }
                         Button(
                             onClick = {
-                                operator = "-"
+                                textFieldValues =
+                                    textFieldValues.copy(operator = operators.subtraction)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
-                            Text(text = "-")
+                            Icon(
+                                painter = painterResource(id = operators.subtraction),
+                                contentDescription = "Subtraction",
+                                tint = colors.font
+                            )
                         }
                         Button(
                             onClick = {
-                                operator = "*"
+                                textFieldValues =
+                                    textFieldValues.copy(operator = operators.multiplication)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
-                            Text(text = "*")
+                            Icon(
+                                painter = painterResource(id = operators.multiplication),
+                                contentDescription = "Multiplication",
+                                tint = colors.font
+                            )
                         }
                         Button(
                             onClick = {
-                                operator = "/"
+                                textFieldValues =
+                                    textFieldValues.copy(operator = operators.division)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
-                            Text(text = "/")
+                            Icon(
+                                painter = painterResource(id = R.drawable.slash_svgrepo_com),
+                                contentDescription = "Multiplication",
+                                tint = colors.font
+                            )
                         }
                     }
                     Row {
 
                         Button(
                             onClick = {
-                                if (numberX.isEmpty()) {
-                                    numberX = Math.PI.toString()
-                                } else if (numberY.isEmpty()) {
-                                    numberY = Math.PI.toString()
+                                if (textFieldValues.numberX.isEmpty()) {
+                                    textFieldValues =
+                                        textFieldValues.copy(numberX = Math.PI.toString())
+                                } else if (textFieldValues.numberY.isEmpty()) {
+                                    textFieldValues =
+                                        textFieldValues.copy(numberY = Math.PI.toString())
                                 } else {
-                                    numberX = Math.PI.toString()
+                                    textFieldValues =
+                                        textFieldValues.copy(numberX = Math.PI.toString())
                                 }
                             },
                             buttonModifier,
@@ -267,62 +305,71 @@ class MainActivity : ComponentActivity() {
                         var y: Double
                         Button(
                             onClick = {
-                                if (numberX.isEmpty()) {
+                                if (textFieldValues.numberX.isEmpty()) {
                                     Toast.makeText(
                                         context,
                                         "Error - First number is missing",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     ).show()
                                     return@Button
-                                } else if (numberY.isEmpty()) {
+                                } else if (textFieldValues.numberY.isEmpty()) {
                                     Toast.makeText(
                                         context,
                                         "Error - Second number is missing",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     )
                                         .show()
                                     return@Button
-                                } else if (operator.isEmpty()) {
+                                } else if (textFieldValues.operator == operators.EMPTY) {
                                     Toast.makeText(
                                         context,
                                         "Error - Please select an operator",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     )
                                         .show()
                                     return@Button
                                 }
 
                                 try {
-                                    x = numberX.toDouble()
+                                    x = textFieldValues.numberX.toDouble()
                                 } catch (e: NumberFormatException) {
                                     Toast.makeText(
                                         context,
                                         "Error - First input contains an unknown input",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     )
                                         .show()
                                     return@Button
                                 }
                                 try {
-                                    y = numberY.toDouble()
+                                    y = textFieldValues.numberY.toDouble()
                                 } catch (e: NumberFormatException) {
                                     Toast.makeText(
                                         context,
                                         "Error - Second input contains an unknown input",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     )
                                         .show()
                                     return@Button
                                 }
 //  TODO : Rewrite this entire part
                                 var resultValue: Double
-                                if (operator == "+") {
+                                if (textFieldValues.operator == operators.addition) {
                                     resultValue = (x + y)
-                                } else if (operator == "-") {
+                                } else if (textFieldValues.operator == operators.subtraction) {
                                     resultValue = (x - y)
-                                } else if (operator == "*") {
+                                } else if (textFieldValues.operator == operators.multiplication) {
                                     resultValue = (x * y)
                                 } else {
+                                    if (y == 0.0) {
+                                        Toast.makeText(
+                                            context,
+                                            "Error - Division with Zero is undefined",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                        return@Button
+                                    }
                                     resultValue = (x / y)
                                 }
                                 if (resultValue.isNaN()) {
@@ -332,18 +379,24 @@ class MainActivity : ComponentActivity() {
                                     Toast.makeText(
                                         context,
                                         "Result exceeds the negative boundary",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     ).show()
                                 } else if (resultValue == Double.POSITIVE_INFINITY) {
                                     println("Positive Inifinity ------------")
                                     Toast.makeText(
                                         context,
                                         "Result exceeds the positive boundary",
-                                        Toast.LENGTH_LONG
+                                        Toast.LENGTH_SHORT
                                     ).show()
                                 } else {
                                     println("-------------- Nothing")
-                                    result = resultValue.toString()
+                                    val decimalFormat = DecimalFormat("###.#")
+                                    textFieldValues =
+                                        textFieldValues.copy(
+                                            result = decimalFormat.format(
+                                                resultValue
+                                            )
+                                        )
                                 }
                             },
                             buttonModifier,
