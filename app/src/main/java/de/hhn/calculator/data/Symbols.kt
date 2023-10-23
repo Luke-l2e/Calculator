@@ -10,5 +10,6 @@ data class Symbols(
     var division : Int = R.drawable.slash_svgrepo_com,
     var clear : Int = R.drawable.baseline_restart_alt_24,
     var equalSign : Int = R.drawable.equal_sign,
-    var pi : Int = R.drawable.pi2
+    var pi : Int = R.drawable.pi2,
+    var factorial : Int = R.drawable.factorial
 )
