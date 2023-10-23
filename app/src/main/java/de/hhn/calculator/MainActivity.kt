@@ -1,6 +1,8 @@
 package de.hhn.calculator
 
+import android.content.Context
 import android.os.Bundle
+import android.os.Vibrator
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,8 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,8 +42,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import de.hhn.calculator.data.Colors
+import de.hhn.calculator.data.Symbols
+import de.hhn.calculator.data.Values
 import de.hhn.calculator.ui.theme.CalculatorTheme
-import java.text.DecimalFormat
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -52,11 +56,12 @@ class MainActivity : ComponentActivity() {
                 var colors by remember {
                     mutableStateOf(Colors())
                 }
-                var operators by remember {
-                    mutableStateOf(Operators())
+                var symbols by remember {
+                    mutableStateOf(Symbols())
                 }
-                var textFieldValues by remember { mutableStateOf(TextFieldValues()) }
+                var values by remember { mutableStateOf(Values()) }
                 val context = LocalContext.current
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 val buttonColors = ButtonDefaults.buttonColors(
                     containerColor = colors.item
                 )
@@ -71,10 +76,10 @@ class MainActivity : ComponentActivity() {
                 )
                 {
                     TextField(
-                        value = textFieldValues.numberX,
+                        value = values.numberX,
                         onValueChange = {
                             if (it.isBlank()) {
-                                textFieldValues = textFieldValues.copy(numberX = "")
+                                values = values.copy(numberX = "")
                                 return@TextField
                             }
                             var value: Double
@@ -88,7 +93,7 @@ class MainActivity : ComponentActivity() {
                                     .show()
                                 return@TextField
                             }
-                            textFieldValues = textFieldValues.copy(numberX = it)
+                            values = values.copy(numberX = it)
                         },
                         Modifier
                             .fillMaxWidth(),
@@ -112,37 +117,22 @@ class MainActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // TODO : Workaround instead of 0.    id = 0 -> crash
-                        if (textFieldValues.operator != operators.EMPTY) {
-                            Icon(
-                                painter = painterResource(id = textFieldValues.operator),
-                                contentDescription = "Multiplication",
-                                tint = colors.font
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(id = operators.addition),
-                                contentDescription = "Multiplication",
-                                tint = colors.font,
-                                modifier = Modifier.alpha(0.0f)
-                            )
+                        var transparency = 1.0f
+                        if (values.operator == symbols.NULL) {
+                            transparency = 0.0f
                         }
-
+                        Icon(
+                            painter = painterResource(id = values.operator),
+                            contentDescription = "Operator",
+                            tint = colors.font,
+                            modifier = Modifier.alpha(transparency)
+                        )
                     }
-
-
-//                    Text(
-//                        text = textFieldValues.operator.toString(),
-//                        color = Color.White,
-//                        fontSize = 9.em,
-//                        textAlign = TextAlign.Center,
-//                    )
-
                     TextField(
-                        value = textFieldValues.numberY,
+                        value = values.numberY,
                         onValueChange = {
                             if (it.isBlank()) {
-                                textFieldValues = textFieldValues.copy(numberY = "")
+                                values = values.copy(numberY = "")
                                 return@TextField
                             }
                             var value: Double
@@ -156,7 +146,7 @@ class MainActivity : ComponentActivity() {
                                     .show()
                                 return@TextField
                             }
-                            textFieldValues = textFieldValues.copy(numberY = it)
+                            values = values.copy(numberY = it)
                         },
                         Modifier
                             .fillMaxWidth(),
@@ -179,7 +169,7 @@ class MainActivity : ComponentActivity() {
                     )
 
                     TextField(
-                        value = textFieldValues.result,
+                        value = values.result,
                         onValueChange = {},
                         Modifier
                             .fillMaxWidth(),
@@ -202,117 +192,129 @@ class MainActivity : ComponentActivity() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(105.dp)
                     ) {
                         Button(
                             onClick = {
-                                textFieldValues = TextFieldValues()
-                            },
-                            buttonModifier,
-                            shape = CircleShape,
-                            colors = buttonColors
-                        ) {
-                            // TODO : Class operators to Symbols
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_restart_alt_24),
-                                contentDescription = "Clear content",
-                                tint = colors.font
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                textFieldValues =
-                                    textFieldValues.copy(operator = operators.addition)
+                                vibrate(vibrator, values.vibrationShort)
+                                values = values.copy(operator = symbols.addition)
                             },
                             buttonModifier,
                             shape = CircleShape,
                             colors = buttonColors
                         ) {
                             Icon(
-                                painter = painterResource(id = operators.addition),
+                                painter = painterResource(id = symbols.addition),
                                 contentDescription = "Addition",
                                 tint = colors.font
                             )
                         }
                         Button(
                             onClick = {
-                                textFieldValues =
-                                    textFieldValues.copy(operator = operators.subtraction)
+                                vibrate(vibrator, values.vibrationShort)
+                                values = values.copy(operator = symbols.subtraction)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
                             Icon(
-                                painter = painterResource(id = operators.subtraction),
+                                painter = painterResource(id = symbols.subtraction),
                                 contentDescription = "Subtraction",
                                 tint = colors.font
                             )
                         }
                         Button(
                             onClick = {
-                                textFieldValues =
-                                    textFieldValues.copy(operator = operators.multiplication)
+                                vibrate(vibrator, values.vibrationShort)
+                                values = values.copy(operator = symbols.multiplication)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
                             Icon(
-                                painter = painterResource(id = operators.multiplication),
+                                painter = painterResource(id = symbols.multiplication),
                                 contentDescription = "Multiplication",
                                 tint = colors.font
                             )
                         }
                         Button(
                             onClick = {
-                                textFieldValues =
-                                    textFieldValues.copy(operator = operators.division)
+                                vibrate(vibrator, values.vibrationShort)
+                                values = values.copy(operator = symbols.division)
                             },
                             buttonModifier,
                             colors = buttonColors
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.slash_svgrepo_com),
+                                painter = painterResource(id = symbols.division),
                                 contentDescription = "Multiplication",
                                 tint = colors.font
                             )
                         }
                     }
-                    Row {
-
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
                         Button(
                             onClick = {
-                                if (textFieldValues.numberX.isEmpty()) {
-                                    textFieldValues =
-                                        textFieldValues.copy(numberX = Math.PI.toString())
-                                } else if (textFieldValues.numberY.isEmpty()) {
-                                    textFieldValues =
-                                        textFieldValues.copy(numberY = Math.PI.toString())
+                                vibrate(vibrator, values.vibrationShort)
+                                values = Values()
+                            },
+                            buttonModifier,
+                            shape = CircleShape,
+                            colors = buttonColors
+                        ) {
+                            Icon(
+                                painter = painterResource(id = symbols.clear),
+                                contentDescription = "Clear",
+                                tint = colors.font
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                vibrate(vibrator, values.vibrationShort)
+                                if (values.numberX.isEmpty()) {
+                                    values =
+                                        values.copy(numberX = Math.PI.toString())
+                                } else if (values.numberY.isEmpty()) {
+                                    values =
+                                        values.copy(numberY = Math.PI.toString())
                                 } else {
-                                    textFieldValues =
-                                        textFieldValues.copy(numberX = Math.PI.toString())
+                                    values =
+                                        values.copy(numberX = Math.PI.toString())
                                 }
                             },
                             buttonModifier,
                             colors = buttonColors
                         )
                         {
-                            Text("Pi")
+                            Icon(
+                                painter = painterResource(id = symbols.pi),
+                                contentDescription = "Pi",
+                                tint = colors.font
+                            )
                         }
 
                     }
                     Row {
                         var x: Double
                         var y: Double
+                        // TODO - Vibration effect
                         Button(
                             onClick = {
-                                if (textFieldValues.numberX.isEmpty()) {
+                                vibrate(vibrator, values.vibrationShort)
+                                if (values.numberX.isEmpty()) {
+                                    vibrate(vibrator, values.vibrationLong)
                                     Toast.makeText(
                                         context,
                                         "Error - First number is missing",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     return@Button
-                                } else if (textFieldValues.numberY.isEmpty()) {
+                                } else if (values.numberY.isEmpty()) {
+                                    vibrate(vibrator, values.vibrationLong)
                                     Toast.makeText(
                                         context,
                                         "Error - Second number is missing",
@@ -320,7 +322,8 @@ class MainActivity : ComponentActivity() {
                                     )
                                         .show()
                                     return@Button
-                                } else if (textFieldValues.operator == operators.EMPTY) {
+                                } else if (values.operator == symbols.NULL) {
+                                    vibrate(vibrator, values.vibrationLong)
                                     Toast.makeText(
                                         context,
                                         "Error - Please select an operator",
@@ -331,8 +334,9 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 try {
-                                    x = textFieldValues.numberX.toDouble()
+                                    x = values.numberX.toDouble()
                                 } catch (e: NumberFormatException) {
+                                    vibrate(vibrator, values.vibrationLong)
                                     Toast.makeText(
                                         context,
                                         "Error - First input contains an unknown input",
@@ -342,8 +346,9 @@ class MainActivity : ComponentActivity() {
                                     return@Button
                                 }
                                 try {
-                                    y = textFieldValues.numberY.toDouble()
+                                    y = values.numberY.toDouble()
                                 } catch (e: NumberFormatException) {
+                                    vibrate(vibrator, values.vibrationLong)
                                     Toast.makeText(
                                         context,
                                         "Error - Second input contains an unknown input",
@@ -352,16 +357,17 @@ class MainActivity : ComponentActivity() {
                                         .show()
                                     return@Button
                                 }
-//  TODO : Rewrite this entire part
+                                //  TODO : Rewrite this entire part
                                 var resultValue: Double
-                                if (textFieldValues.operator == operators.addition) {
+                                if (values.operator == symbols.addition) {
                                     resultValue = (x + y)
-                                } else if (textFieldValues.operator == operators.subtraction) {
+                                } else if (values.operator == symbols.subtraction) {
                                     resultValue = (x - y)
-                                } else if (textFieldValues.operator == operators.multiplication) {
+                                } else if (values.operator == symbols.multiplication) {
                                     resultValue = (x * y)
                                 } else {
                                     if (y == 0.0) {
+                                        vibrate(vibrator, values.vibrationLong)
                                         Toast.makeText(
                                             context,
                                             "Error - Division with Zero is undefined",
@@ -390,27 +396,30 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 } else {
                                     println("-------------- Nothing")
-                                    val decimalFormat = DecimalFormat("###.#")
-                                    textFieldValues =
-                                        textFieldValues.copy(
-                                            result = decimalFormat.format(
-                                                resultValue
-                                            )
-                                        )
+                                    values =
+                                        values.copy(result = resultValue.toString())
                                 }
                             },
-                            buttonModifier,
-                            colors = buttonColors
+                            buttonModifier.width(100.dp),
+                            colors = buttonColors,
                         )
                         {
-                            Text(text = "=")
+                            Icon(
+                                painter = painterResource(id = symbols.equalSign),
+                                contentDescription = "Equals",
+                                tint = colors.font
+                            )
                         }
-
-                        // result = solve(numberX, numberY, operator)
                     }
                 }
             }
         }
+    }
+
+
+    private fun vibrate(vibrator: Vibrator, duration: Long) {
+        vibrator.cancel()
+        vibrator.vibrate(duration)
     }
 }
 

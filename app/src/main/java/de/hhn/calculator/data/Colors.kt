@@ -1,4 +1,4 @@
-package de.hhn.calculator
+package de.hhn.calculator.data
 
 import androidx.compose.ui.graphics.Color
 
