@@ -1,6 +1,7 @@
 package de.hhn.calculator
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Vibrator
 import android.widget.Toast
@@ -296,14 +297,34 @@ class MainActivity : ComponentActivity() {
                                 tint = colors.font
                             )
                         }
+                        Button(
+                            onClick = {
+                                vibrate(vibrator, values.vibrationShort)
+                            },
+                            buttonModifier,
+                            shape = CircleShape,
+                            colors = buttonColors
+                        ) {
+                            Icon(
+                                painter = painterResource(id = symbols.clear),
+                                contentDescription = "Clear",
+                                tint = colors.font
+                            )
+                        }
 
                     }
                     Row {
                         var x: Double
                         var y: Double
-                        // TODO - Vibration effect
                         Button(
                             onClick = {
+// TODO : StartActivity implementieren
+                                val randomInt = Intent(context, RandomNumberGenerator::class.java)
+                                randomInt.putExtra("Key", "testValue")
+                                context.startActivity(randomInt)
+                                return@Button
+
+
                                 vibrate(vibrator, values.vibrationShort)
                                 if (values.numberX.isEmpty()) {
                                     vibrate(vibrator, values.vibrationLong)

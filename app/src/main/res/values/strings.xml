@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Calculator</string>
+    <string name="title_activity_random_number_generator">RandomNumberGenerator</string>
 </resources>
