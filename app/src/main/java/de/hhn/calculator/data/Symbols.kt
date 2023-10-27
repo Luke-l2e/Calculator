@@ -11,5 +11,10 @@ data class Symbols(
     var clear : Int = R.drawable.baseline_restart_alt_24,
     var equalSign : Int = R.drawable.equal_sign,
     var pi : Int = R.drawable.pi2,
-    var factorial : Int = R.drawable.factorial
+    var factorial : Int = R.drawable.factorial,
+    var squareRoot : Int = R.drawable.wurzel,
+    var power : Int = R.drawable.pow,
+    var openRandom : Int = R.drawable.random_3_,
+    var emptyRandom : Int = R.drawable.random_5_,
+    var useRandom : Int = R.drawable.random_6_
 )

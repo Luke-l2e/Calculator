@@ -313,6 +313,23 @@ class MainActivity : ComponentActivity() {
                         }
 
                     }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    {
+                        Button(onClick = {
+                            vibrate(vibrator, values.vibrationShort)
+
+                        },
+                            buttonModifier,
+                            shape = CircleShape,
+                            colors = buttonColors)
+                        { Icon(painter = painterResource(id = symbols.power), contentDescription = "Power",tint= colors.font)}
+
+                    }
                     Row {
                         var x: Double
                         var y: Double
