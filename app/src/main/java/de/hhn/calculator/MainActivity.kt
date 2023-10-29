@@ -54,6 +54,7 @@ import de.hhn.calculator.data.Colors
 import de.hhn.calculator.data.Symbols
 import de.hhn.calculator.data.Values
 import de.hhn.calculator.ui.theme.CalculatorTheme
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
@@ -109,7 +110,7 @@ class MainActivity : ComponentActivity() {
                             singleLine = true,
                             textStyle = TextStyle(color = Color.White),
                             placeholder = {
-                                createPlaceHolderText()
+                                CreatePlaceHolderText()
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             colors = TextFieldDefaults.textFieldColors(
@@ -143,7 +144,7 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxWidth(),
                             shape = RoundedCornerShape(25),
                             placeholder = {
-                                createPlaceHolderText()
+                                CreatePlaceHolderText()
                             },
                             singleLine = true,
                             textStyle = TextStyle(color = Color.White),
@@ -265,7 +266,10 @@ class MainActivity : ComponentActivity() {
                             Button(
                                 onClick = {
                                     vibrate(vibrator, values.vibrationShort)
-
+                                    values = values.copy(
+                                        result = calculatePower(values, context),
+                                        operator = symbols.NULL
+                                    )
                                 },
                                 buttonModifier,
                                 shape = CircleShape,
@@ -283,10 +287,8 @@ class MainActivity : ComponentActivity() {
                                     vibrate(vibrator, values.vibrationShort)
                                     values =
                                         values.copy(
-                                            result = calculateSquareRootOfNumber(
-                                                values,
-                                                context
-                                            )
+                                            result = calculateSquareRootOfNumber(values, context),
+                                            operator = symbols.NULL
                                         )
                                 },
                                 buttonModifier,
@@ -316,105 +318,16 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         Row {
-                            var x: Double
-                            var y: Double
                             Button(
                                 onClick = {
-                                    vibrate(vibrator, values.vibrationShort)
-                                    if (values.numberX.isEmpty()) {
-                                        vibrate(vibrator, values.vibrationLong)
-                                        Toast.makeText(
+                                    values = values.copy(
+                                        result = validateAndCalculateResult(
+                                            vibrator,
+                                            values,
                                             context,
-                                            "Error - First number is missing",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        return@Button
-                                    } else if (values.numberY.isEmpty()) {
-                                        vibrate(vibrator, values.vibrationLong)
-                                        Toast.makeText(
-                                            context,
-                                            "Error - Second number is missing",
-                                            Toast.LENGTH_SHORT
+                                            symbols
                                         )
-                                            .show()
-                                        return@Button
-                                    } else if (values.operator == symbols.NULL) {
-                                        vibrate(vibrator, values.vibrationLong)
-                                        Toast.makeText(
-                                            context,
-                                            "Error - Please select an operator",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                        return@Button
-                                    }
-
-                                    try {
-                                        x = values.numberX.toDouble()
-                                    } catch (e: NumberFormatException) {
-                                        vibrate(vibrator, values.vibrationLong)
-                                        Toast.makeText(
-                                            context,
-                                            "Error - First input contains an unknown input",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                        return@Button
-                                    }
-                                    try {
-                                        y = values.numberY.toDouble()
-                                    } catch (e: NumberFormatException) {
-                                        vibrate(vibrator, values.vibrationLong)
-                                        Toast.makeText(
-                                            context,
-                                            "Error - Second input contains an unknown input",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()
-                                        return@Button
-                                    }
-                                    //  TODO : Rewrite this entire part
-                                    var resultValue: Double
-                                    if (values.operator == symbols.addition) {
-                                        resultValue = (x + y)
-                                    } else if (values.operator == symbols.subtraction) {
-                                        resultValue = (x - y)
-                                    } else if (values.operator == symbols.multiplication) {
-                                        resultValue = (x * y)
-                                    } else {
-                                        if (y == 0.0) {
-                                            vibrate(vibrator, values.vibrationLong)
-                                            Toast.makeText(
-                                                context,
-                                                "Error - Division with Zero is undefined",
-                                                Toast.LENGTH_SHORT
-                                            )
-                                                .show()
-                                            return@Button
-                                        }
-                                        resultValue = (x / y)
-                                    }
-                                    if (resultValue.isNaN()) {
-                                        println("NaN ------------")
-                                    } else if (resultValue == Double.NEGATIVE_INFINITY) {
-                                        println("Negative Inifinity ------------")
-                                        Toast.makeText(
-                                            context,
-                                            "Result exceeds the negative boundary",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else if (resultValue == Double.POSITIVE_INFINITY) {
-                                        println("Positive Inifinity ------------")
-                                        Toast.makeText(
-                                            context,
-                                            "Result exceeds the positive boundary",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        println("-------------- Nothing")
-                                        values =
-                                            values.copy(result = resultValue.toString())
-                                    }
+                                    )
                                 },
                                 buttonModifier.width(100.dp),
                                 colors = buttonColors,
@@ -431,6 +344,97 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun calculatePower(values: Values, context: Context): String {
+        if (values.numberX.isEmpty() || values.numberX == "-") {
+            showToast(context, "Please enter a valid first number.")
+            return ""
+        }
+        if (values.numberY.isEmpty() || values.numberY == "-") {
+            showToast(context, "Please enter valid second number.")
+            return ""
+        }
+        return values.numberX.toDouble().pow(values.numberY.toDouble()).toString()
+    }
+
+
+    private fun validateAndCalculateResult(
+        vibrator: Vibrator,
+        values: Values,
+        context: Context,
+        symbols: Symbols
+    ): String {
+        val x: Double
+        val y: Double
+        val resultValue: Double
+        vibrate(vibrator, values.vibrationShort)
+        if (values.numberX.isEmpty() || values.numberX == "-") {
+            vibrate(vibrator, values.vibrationLong)
+            showToast(context, "Error - First number is missing")
+            return ""
+        } else if (values.numberY.isEmpty() || values.numberY == "-") {
+            vibrate(vibrator, values.vibrationLong)
+            showToast(context, "Error - Second number is missing")
+            return ""
+        } else if (values.operator == symbols.NULL) {
+            vibrate(vibrator, values.vibrationLong)
+            showToast(context, "Error - Please select an operator")
+            return ""
+        }
+
+        try {
+            x = values.numberX.toDouble()
+        } catch (e: NumberFormatException) {
+            vibrate(vibrator, values.vibrationLong)
+            showToast(context, "Error - First number is invalid")
+            return ""
+        }
+        try {
+            y = values.numberY.toDouble()
+        } catch (e: NumberFormatException) {
+            vibrate(vibrator, values.vibrationLong)
+            showToast(context, "Error - Second number is invalid")
+            return ""
+        }
+        resultValue = when (values.operator) {
+            symbols.addition -> (x + y)
+            symbols.subtraction -> (x - y)
+            symbols.multiplication -> (x * y)
+            else -> {
+                if (y == 0.0) {
+                    vibrate(vibrator, values.vibrationLong)
+                    showToast(context, "Error - Division by Zero is undefined")
+                    return ""
+                }
+                (x / y)
+            }
+        }
+
+        when (resultValue) {
+            Double.NEGATIVE_INFINITY -> {
+                showToast(context, "Result exceeds the negative boundary")
+                return ""
+            }
+
+            Double.POSITIVE_INFINITY -> {
+                showToast(context, "Result exceeds the positive boundary")
+                return ""
+            }
+
+            else -> {
+                return resultValue.toString()
+            }
+        }
+    }
+
+    private fun showToast(context: Context, text: String) {
+        Toast.makeText(
+            context,
+            text,
+            Toast.LENGTH_SHORT
+        )
+            .show()
     }
 
     private fun startRandomNumberGenerator(
@@ -459,12 +463,7 @@ class MainActivity : ComponentActivity() {
                 return it.dropLast(1)
             }
             if (value == Double.NEGATIVE_INFINITY || value == Double.POSITIVE_INFINITY) {
-                Toast.makeText(
-                    context,
-                    "Value Limit reached",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
+                showToast(context, "Value Limit reached")
                 return it.dropLast(1)
             }
         }
@@ -472,7 +471,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun createPlaceHolderText() {
+    private fun CreatePlaceHolderText() {
         Text(
             text = "Please enter a number",
             color = Color.White,
@@ -483,11 +482,7 @@ class MainActivity : ComponentActivity() {
     private fun calculateSquareRootOfNumber(values: Values, context: Context): String {
         if (values.numberX.isEmpty() || values.numberX.startsWith("-")) {
             if (values.numberY.isEmpty() || values.numberY.startsWith("-")) {
-                Toast.makeText(
-                    context,
-                    "Please enter a positive number into one of the two text-fields.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                showToast(context, "Please enter a positive number.")
                 return ""
             } else {
                 return sqrt(values.numberY.toDouble()).toString()
