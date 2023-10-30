@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Vibrator
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -54,12 +53,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import de.hhn.calculator.data.Colors
 import de.hhn.calculator.data.Symbols
+import de.hhn.calculator.data.Utilities
 import de.hhn.calculator.data.Values
 import de.hhn.calculator.ui.theme.CalculatorTheme
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+@Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,13 +108,14 @@ class MainActivity : ComponentActivity() {
                             .verticalScroll(rememberScrollState())
                             .padding(20.dp),
                         horizontalAlignment = CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceAround,
+                        verticalArrangement = Arrangement.SpaceBetween,
                     )
                     {
                         Image(
                             imageVector = ImageVector.vectorResource(symbols.openRandom),
                             contentDescription = "test",
                             modifier = Modifier
+                                .padding(top = 40.dp, bottom = 40.dp)
                                 .scale(3f)
                                 .clickable {
                                     startRandomNumberGenerator(vibrator, values, context)
@@ -128,7 +130,8 @@ class MainActivity : ComponentActivity() {
                             TextField(
                                 value = values.numberX,
                                 onValueChange = {
-                                    values = values.copy(numberX = validateValue(it, context))
+                                    values =
+                                        values.copy(numberX = Utilities.validateValue(it, context))
                                 },
                                 Modifier
                                     .fillMaxWidth(),
@@ -170,7 +173,8 @@ class MainActivity : ComponentActivity() {
                             TextField(
                                 value = values.numberY,
                                 onValueChange = {
-                                    values = values.copy(numberY = validateValue(it, context))
+                                    values =
+                                        values.copy(numberY = Utilities.validateValue(it, context))
                                 },
                                 Modifier
                                     .fillMaxWidth(),
@@ -215,171 +219,179 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         Column(
-                            horizontalAlignment = CenterHorizontally
+                            Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                            Column(
+                                Modifier.fillMaxSize(),
+                                horizontalAlignment = CenterHorizontally
                             ) {
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(operator = symbols.addition)
-                                    },
-                                    buttonModifier,
-                                    shape = CircleShape,
-                                    colors = buttonColors
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
                                 ) {
-                                    Icon(
-                                        painter = painterResource(id = symbols.addition),
-                                        contentDescription = "Addition",
-                                        tint = colors.font
-                                    )
-                                }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(operator = symbols.subtraction)
-                                    },
-                                    buttonModifier,
-                                    colors = buttonColors
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = symbols.subtraction),
-                                        contentDescription = "Subtraction",
-                                        tint = colors.font
-                                    )
-                                }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(operator = symbols.multiplication)
-                                    },
-                                    buttonModifier,
-                                    colors = buttonColors
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = symbols.multiplication),
-                                        contentDescription = "Multiplication",
-                                        tint = colors.font
-                                    )
-                                }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(operator = symbols.division)
-                                    },
-                                    buttonModifier,
-                                    colors = buttonColors
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = symbols.division),
-                                        contentDescription = "Multiplication",
-                                        tint = colors.font
-                                    )
-                                }
-                            }
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(
-                                            operator = symbols.factorial,
-                                            result = calculateFactorialOfNumberX(
-                                                context,
-                                                values
-                                            )
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(operator = symbols.addition)
+                                        },
+                                        buttonModifier,
+                                        shape = CircleShape,
+                                        colors = buttonColors
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = symbols.addition),
+                                            contentDescription = "Addition",
+                                            tint = colors.font
                                         )
-                                    },
-                                    buttonModifier,
-                                    shape = CircleShape,
-                                    colors = buttonColors
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = symbols.factorial),
-                                        contentDescription = "Factorial",
-                                        tint = colors.font
-                                    )
-                                }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values = values.copy(
-                                            operator = symbols.power,
-                                            result = calculatePower(values, context)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(operator = symbols.subtraction)
+                                        },
+                                        buttonModifier,
+                                        colors = buttonColors
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = symbols.subtraction),
+                                            contentDescription = "Subtraction",
+                                            tint = colors.font
                                         )
-                                    },
-                                    buttonModifier,
-                                    shape = CircleShape,
-                                    colors = buttonColors
-                                )
-                                {
-                                    Icon(
-                                        painter = painterResource(id = symbols.power),
-                                        contentDescription = "Power",
-                                        tint = colors.font
-                                    )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(operator = symbols.multiplication)
+                                        },
+                                        buttonModifier,
+                                        colors = buttonColors
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = symbols.multiplication),
+                                            contentDescription = "Multiplication",
+                                            tint = colors.font
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(operator = symbols.division)
+                                        },
+                                        buttonModifier,
+                                        colors = buttonColors
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = symbols.division),
+                                            contentDescription = "Multiplication",
+                                            tint = colors.font
+                                        )
+                                    }
                                 }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        values =
-                                            values.copy(
-                                                operator = symbols.squareRoot,
-                                                result = calculateSquareRootOfNumber(
-                                                    values,
-                                                    context
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(
+                                                operator = symbols.factorial,
+                                                result = calculateFactorialOfNumberX(
+                                                    context,
+                                                    values
                                                 )
                                             )
-                                    },
-                                    buttonModifier,
-                                    colors = buttonColors
-                                )
-                                {
-                                    Icon(
-                                        painter = painterResource(id = symbols.squareRoot),
-                                        contentDescription = "Sqrt",
-                                        tint = colors.font
+                                        },
+                                        buttonModifier,
+                                        shape = CircleShape,
+                                        colors = buttonColors
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = symbols.factorial),
+                                            contentDescription = "Factorial",
+                                            tint = colors.font
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = values.copy(
+                                                operator = symbols.power,
+                                                result = calculatePower(values, context)
+                                            )
+                                        },
+                                        buttonModifier,
+                                        shape = CircleShape,
+                                        colors = buttonColors
                                     )
-                                }
-                                Button(
-                                    onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
-                                        if (values.numberX.isEmpty()) {
-                                            values = values.copy(numberX = Math.PI.toString())
-                                        } else {
-                                            if (values.numberY.isEmpty()) {
-                                                values = values.copy(numberY = Math.PI.toString())
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = symbols.power),
+                                            contentDescription = "Power",
+                                            tint = colors.font
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values =
+                                                values.copy(
+                                                    operator = symbols.squareRoot,
+                                                    result = calculateSquareRootOfNumber(
+                                                        values,
+                                                        context
+                                                    )
+                                                )
+                                        },
+                                        buttonModifier,
+                                        colors = buttonColors
+                                    )
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = symbols.squareRoot),
+                                            contentDescription = "Sqrt",
+                                            tint = colors.font
+                                        )
+                                    }
+                                    Button(
+                                        onClick = {
+                                            Utilities.vibrate(vibrator, values.vibrationShort)
+                                            values = if (values.numberX.isEmpty()) {
+                                                values.copy(numberX = Math.PI.toString())
                                             } else {
-                                                values = values.copy(numberX = Math.PI.toString())
+                                                if (values.numberY.isEmpty()) {
+                                                    values.copy(numberY = Math.PI.toString())
+                                                } else {
+                                                    values.copy(numberX = Math.PI.toString())
+                                                }
                                             }
-                                        }
-                                    },
-                                    buttonModifier,
-                                    colors = buttonColors
-                                )
-                                {
-                                    Icon(
-                                        painter = painterResource(id = symbols.pi),
-                                        contentDescription = "Pi",
-                                        tint = colors.font
+                                        },
+                                        buttonModifier,
+                                        colors = buttonColors
                                     )
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = symbols.pi),
+                                            contentDescription = "Pi",
+                                            tint = colors.font
+                                        )
+                                    }
                                 }
                             }
                             Row(
-                                Modifier.fillMaxWidth(),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp),
                                 horizontalArrangement = Arrangement.SpaceAround
                             ) {
                                 Button(
                                     onClick = {
-                                        vibrate(vibrator, values.vibrationShort)
+                                        Utilities.vibrate(vibrator, values.vibrationShort)
                                         values = Values()
                                     },
                                     buttonModifier.width(100.dp),
@@ -395,7 +407,7 @@ class MainActivity : ComponentActivity() {
                                 Button(
                                     onClick = {
                                         values = values.copy(
-                                            result = validateAndCalculateResult(
+                                            result = validateAndCalculateBasicResult(
                                                 vibrator,
                                                 values,
                                                 context,
@@ -426,7 +438,7 @@ class MainActivity : ComponentActivity() {
         try {
             valueX = values.numberX.trim().toInt()
         } catch (e: NumberFormatException) {
-            showToast(context, "Please enter a valid integer for x.")
+            Utilities.showToast(context, "Please enter a valid integer for x.")
             return ""
         }
 
@@ -439,52 +451,51 @@ class MainActivity : ComponentActivity() {
         if (valueX < 0) {
             resultValue = -resultValue
         }
-        when (resultValue) {
+        return when (resultValue) {
             Double.NEGATIVE_INFINITY -> {
-                showToast(context, "Result exceeds the negative boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the negative boundary")
+                ""
             }
 
             Double.POSITIVE_INFINITY -> {
-                showToast(context, "Result exceeds the positive boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the positive boundary")
+                ""
             }
 
             else -> {
-                return resultValue.toString()
+                resultValue.toString()
             }
         }
     }
 
     private fun calculatePower(values: Values, context: Context): String {
         if (values.numberX.isEmpty() || values.numberX == "-") {
-            showToast(context, "Please enter a valid first number.")
+            Utilities.showToast(context, "Please enter a valid first number.")
             return ""
         }
         if (values.numberY.isEmpty() || values.numberY == "-") {
-            showToast(context, "Please enter valid second number.")
+            Utilities.showToast(context, "Please enter valid second number.")
             return ""
         }
-        val resultValue = values.numberX.toDouble().pow(values.numberY.toDouble())
-        when (resultValue) {
+        return when (val resultValue = values.numberX.toDouble().pow(values.numberY.toDouble())) {
             Double.NEGATIVE_INFINITY -> {
-                showToast(context, "Result exceeds the negative boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the negative boundary")
+                ""
             }
 
             Double.POSITIVE_INFINITY -> {
-                showToast(context, "Result exceeds the positive boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the positive boundary")
+                ""
             }
 
             else -> {
-                return resultValue.toString()
+                resultValue.toString()
             }
         }
     }
 
 
-    private fun validateAndCalculateResult(
+    private fun validateAndCalculateBasicResult(
         vibrator: Vibrator,
         values: Values,
         context: Context,
@@ -492,74 +503,64 @@ class MainActivity : ComponentActivity() {
     ): String {
         val x: Double
         val y: Double
-        val resultValue: Double
-        vibrate(vibrator, values.vibrationShort)
+        Utilities.vibrate(vibrator, values.vibrationShort)
         if (values.numberX.isEmpty() || values.numberX == "-") {
-            vibrate(vibrator, values.vibrationLong)
-            showToast(context, "First number is missing")
+            Utilities.vibrate(vibrator, values.vibrationLong)
+            Utilities.showToast(context, "First number is missing")
             return ""
         } else if (values.numberY.isEmpty() || values.numberY == "-") {
-            vibrate(vibrator, values.vibrationLong)
-            showToast(context, "Second number is missing")
+            Utilities.vibrate(vibrator, values.vibrationLong)
+            Utilities.showToast(context, "Second number is missing")
             return ""
         } else if (!values.basicOperators.contains(values.operator)) {
-            vibrate(vibrator, values.vibrationLong)
-            showToast(context, "Please select a basic operator")
+            Utilities.vibrate(vibrator, values.vibrationLong)
+            Utilities.showToast(context, "Please select a basic operator")
             return ""
         }
 
         try {
             x = values.numberX.toDouble()
         } catch (e: NumberFormatException) {
-            vibrate(vibrator, values.vibrationLong)
-            showToast(context, "First number is invalid")
+            Utilities.vibrate(vibrator, values.vibrationLong)
+            Utilities.showToast(context, "First number is invalid")
             return ""
         }
         try {
             y = values.numberY.toDouble()
         } catch (e: NumberFormatException) {
-            vibrate(vibrator, values.vibrationLong)
-            showToast(context, "Second number is invalid")
+            Utilities.vibrate(vibrator, values.vibrationLong)
+            Utilities.showToast(context, "Second number is invalid")
             return ""
         }
-        resultValue = when (values.operator) {
+        val resultValue: Double = when (values.operator) {
             symbols.addition -> (x + y)
             symbols.subtraction -> (x - y)
             symbols.multiplication -> (x * y)
             else -> {
                 if (y == 0.0) {
-                    vibrate(vibrator, values.vibrationLong)
-                    showToast(context, "Division by Zero is undefined")
+                    Utilities.vibrate(vibrator, values.vibrationLong)
+                    Utilities.showToast(context, "Division by Zero is undefined")
                     return ""
                 }
                 (x / y)
             }
         }
 
-        when (resultValue) {
+        return when (resultValue) {
             Double.NEGATIVE_INFINITY -> {
-                showToast(context, "Result exceeds the negative boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the negative boundary")
+                ""
             }
 
             Double.POSITIVE_INFINITY -> {
-                showToast(context, "Result exceeds the positive boundary")
-                return ""
+                Utilities.showToast(context, "Result exceeds the positive boundary")
+                ""
             }
 
             else -> {
-                return resultValue.toString()
+                resultValue.toString()
             }
         }
-    }
-
-    private fun showToast(context: Context, text: String) {
-        Toast.makeText(
-            context,
-            text,
-            Toast.LENGTH_SHORT
-        )
-            .show()
     }
 
     private fun startRandomNumberGenerator(
@@ -567,32 +568,12 @@ class MainActivity : ComponentActivity() {
         values: Values,
         context: Context
     ) {
-        vibrate(vibrator, values.vibrationShort)
+        Utilities.vibrate(vibrator, values.vibrationShort)
         val randomNumberGenerator =
             Intent(context, RandomNumberGenerator::class.java)
         randomNumberGenerator.putExtra("numberX", values.numberX)
         randomNumberGenerator.putExtra("numberY", values.numberY)
         context.startActivity(randomNumberGenerator)
-    }
-
-
-    private fun validateValue(it: String, context: Context): String {
-        if (it.isBlank()) {
-            return ""
-        }
-        if (it != "-") {
-            val value: Double
-            try {
-                value = it.toDouble()
-            } catch (e: NumberFormatException) {
-                return it.dropLast(1)
-            }
-            if (value == Double.NEGATIVE_INFINITY || value == Double.POSITIVE_INFINITY) {
-                showToast(context, "Value Limit reached")
-                return it.dropLast(1)
-            }
-        }
-        return it
     }
 
     @Composable
@@ -605,21 +586,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun calculateSquareRootOfNumber(values: Values, context: Context): String {
-        if (values.numberX.isEmpty() || values.numberX.startsWith("-")) {
+        return if (values.numberX.isEmpty() || values.numberX.startsWith("-")) {
             if (values.numberY.isEmpty() || values.numberY.startsWith("-")) {
-                showToast(context, "Please enter a positive number.")
-                return ""
+                Utilities.showToast(context, "Please enter a positive number.")
+                ""
             } else {
-                return sqrt(values.numberY.toDouble()).toString()
+                sqrt(values.numberY.toDouble()).toString()
             }
         } else {
-            return sqrt(values.numberX.toDouble()).toString()
+            sqrt(values.numberX.toDouble()).toString()
         }
-    }
-
-
-    private fun vibrate(vibrator: Vibrator, duration: Long) {
-        vibrator.cancel()
-        vibrator.vibrate(duration)
     }
 }
