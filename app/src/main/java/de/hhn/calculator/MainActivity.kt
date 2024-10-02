@@ -117,7 +117,8 @@ class MainActivity : ComponentActivity() {
                         Box(
                             Modifier
                                 .fillMaxSize()
-                                .padding(bottom = 40.dp)) {
+                                .padding(bottom = 40.dp)
+                        ) {
                             Image(
                                 imageVector = ImageVector.vectorResource(symbols.openRandom),
                                 contentDescription = "Random Number Generator",
