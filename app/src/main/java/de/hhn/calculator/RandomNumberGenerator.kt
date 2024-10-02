@@ -254,14 +254,14 @@ class RandomNumberGenerator : ComponentActivity() {
             return ""
         }
         if (valueX > valueY) {
-            val x = valueX;
-            valueX = valueY;
-            valueY = x;
+            val x = valueX
+            valueX = valueY
+            valueY = x
         }
         return if (isDouble) {
             Random.nextDouble(valueX, valueY).toString()
         } else {
-            valueY++; // Random ranges from valueX to valueY-1 for int
+            valueY++ // Random ranges from valueX to valueY-1 for int
             Random.nextInt(valueX.toInt(), valueY.toInt()).toString()
         }
     }
