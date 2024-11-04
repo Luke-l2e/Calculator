@@ -3,12 +3,12 @@ package de.hhn.calculator
 import android.content.Context
 import android.os.Bundle
 import android.os.Vibrator
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -39,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,10 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import de.hhn.calculator.data.Colors
 import de.hhn.calculator.data.Symbols
+import de.hhn.calculator.data.Utilities
 import de.hhn.calculator.data.Values
 import de.hhn.calculator.ui.theme.CalculatorTheme
 import kotlin.random.Random
 
+@Suppress("DEPRECATION")
 class RandomNumberGenerator : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +84,6 @@ class RandomNumberGenerator : ComponentActivity() {
                     containerColor = colors.item
                 )
                 val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                val activity = (LocalLifecycleOwner.current as ComponentActivity)
 
                 Column(
                     Modifier
@@ -96,7 +97,7 @@ class RandomNumberGenerator : ComponentActivity() {
                             Text("Random", Modifier.fillMaxWidth(), fontSize = 10.em)
                         },
                         navigationIcon = {
-                            IconButton(onClick = { activity.finish() }) {
+                            IconButton(onClick = { finish() }) {
                                 Icon(Icons.Filled.ArrowBack, "Head back")
                             }
                         },
@@ -121,7 +122,8 @@ class RandomNumberGenerator : ComponentActivity() {
                             TextField(
                                 value = values.numberX,
                                 onValueChange = {
-                                    values = values.copy(numberX = validateValue(it, context))
+                                    values =
+                                        values.copy(numberX = Utilities.validateValue(it, context))
                                 },
                                 Modifier
                                     .fillMaxWidth(),
@@ -147,7 +149,8 @@ class RandomNumberGenerator : ComponentActivity() {
                             TextField(
                                 value = values.numberY,
                                 onValueChange = {
-                                    values = values.copy(numberY = validateValue(it, context))
+                                    values =
+                                        values.copy(numberY = Utilities.validateValue(it, context))
                                 },
                                 Modifier
                                     .fillMaxWidth(),
@@ -189,15 +192,30 @@ class RandomNumberGenerator : ComponentActivity() {
                                     focusedIndicatorColor = colors.background
                                 )
                             )
+                            Row(
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Decimal: ", color = colors.font, modifier = Modifier
+                                        .alpha(0.8f)
+                                )
+                                Switch(checked = values.isDouble, onCheckedChange = {
+                                    values = values.copy(isDouble = !values.isDouble)
+                                })
+                            }
                         }
                         Button(
                             onClick = {
-                                vibrate(vibrator, values.vibrationShort)
+                                Utilities.vibrate(vibrator, values.vibrationShort)
                                 values = values.copy(
                                     result = calculateRandomNumber(
                                         context,
                                         values.numberX,
-                                        values.numberY
+                                        values.numberY,
+                                        values.isDouble
                                     )
                                 )
                             },
@@ -217,24 +235,34 @@ class RandomNumberGenerator : ComponentActivity() {
         }
     }
 
-    private fun calculateRandomNumber(context: Context, numberX: String, numberY: String): String {
-        if (numberX.isEmpty() || numberX == "-") {
-            showToast(context, "First number is missing")
-            return ""
-        } else if (numberY.isEmpty() || numberY == "-") {
-            showToast(context, "Second number is missing")
-            return ""
+    private fun calculateRandomNumber(
+        context: Context,
+        numberX: String,
+        numberY: String,
+        isDouble: Boolean = false
+    ): String {
+        var valueX = 1.0
+        var valueY = 20.0
+        if (numberX.isNotEmpty() && numberX != "-") {
+            valueX = numberX.toDouble()
         }
-        val valueX = numberX.toDouble()
-        val valueY = numberY.toDouble()
+        if (numberY.isNotEmpty() && numberY != "-") {
+            valueY = numberY.toDouble()
+        }
         if (valueX == valueY) {
-            showToast(context, "The numbers are identical")
+            Utilities.showToast(context, "The numbers are identical")
             return ""
         }
-        return if (valueX < valueY) {
+        if (valueX > valueY) {
+            val x = valueX
+            valueX = valueY
+            valueY = x
+        }
+        return if (isDouble) {
             Random.nextDouble(valueX, valueY).toString()
         } else {
-            Random.nextDouble(valueY, valueX).toString()
+            valueY++ // Random ranges from valueX to valueY-1 for int
+            Random.nextInt(valueX.toInt(), valueY.toInt()).toString()
         }
     }
 
@@ -246,38 +274,5 @@ class RandomNumberGenerator : ComponentActivity() {
             color = Color.White,
             modifier = Modifier.alpha(0.5F)
         )
-    }
-
-    private fun validateValue(it: String, context: Context): String {
-        if (it.isBlank()) {
-            return ""
-        }
-        if (it != "-") {
-            val value: Double
-            try {
-                value = it.toDouble()
-            } catch (e: NumberFormatException) {
-                return it.dropLast(1)
-            }
-            if (value == Double.NEGATIVE_INFINITY || value == Double.POSITIVE_INFINITY) {
-                showToast(context, "Value Limit reached")
-                return it.dropLast(1)
-            }
-        }
-        return it
-    }
-
-    private fun showToast(context: Context, text: String) {
-        Toast.makeText(
-            context,
-            text,
-            Toast.LENGTH_SHORT
-        )
-            .show()
-    }
-
-    private fun vibrate(vibrator: Vibrator, duration: Long) {
-        vibrator.cancel()
-        vibrator.vibrate(duration)
     }
 }

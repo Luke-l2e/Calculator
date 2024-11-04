@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,9 +38,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -111,17 +114,35 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.SpaceBetween,
                     )
                     {
-                        Image(
-                            imageVector = ImageVector.vectorResource(symbols.openRandom),
-                            contentDescription = "test",
-                            modifier = Modifier
-                                .padding(top = 40.dp, bottom = 40.dp)
-                                .scale(3f)
-                                .clickable {
-                                    startRandomNumberGenerator(vibrator, values, context)
-                                }
-                                .offset(x = 3.dp)
-                        )
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 40.dp)
+                        ) {
+                            Image(
+                                imageVector = ImageVector.vectorResource(symbols.openRandom),
+                                contentDescription = "Random Number Generator",
+                                modifier = Modifier
+                                    .padding(top = 40.dp, bottom = 0.dp)
+                                    .scale(3f)
+                                    .offset(x = 3.dp)
+                                    .clip(RoundedCornerShape(30))
+                                    .clickable {
+                                        startRandomNumberGenerator(vibrator, values, context)
+                                    }
+                                    .align(Center),
+                                alignment = Center
+                            )
+                            Text(
+                                text = "Random Number\nGenerator",
+                                color = colors.font,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .padding(bottom = 20.dp)
+                                    .alpha(0.5f)
+                                    .align(Center)
+                            )
+                        }
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = CenterHorizontally,
@@ -401,7 +422,8 @@ class MainActivity : ComponentActivity() {
                                     Icon(
                                         painter = painterResource(id = symbols.clear),
                                         contentDescription = "Clear",
-                                        tint = colors.font
+                                        tint = colors.font,
+                                        modifier = Modifier.scale(1.5f)
                                     )
                                 }
                                 Button(

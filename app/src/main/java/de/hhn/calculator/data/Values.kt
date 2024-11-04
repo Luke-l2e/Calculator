@@ -14,5 +14,6 @@ data class Values(
     var numberX: String = "",
     var numberY: String = "",
     var operator: Int = symbols.NULL,
-    var result: String = ""
+    var result: String = "",
+    var isDouble: Boolean = false
 )

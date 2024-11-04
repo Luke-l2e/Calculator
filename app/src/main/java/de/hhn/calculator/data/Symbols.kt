@@ -8,7 +8,7 @@ data class Symbols(
     var subtraction : Int = R.drawable.baseline_horizontal_rule_24,
     var multiplication : Int = R.drawable.baseline_clear_24,
     var division : Int = R.drawable.slash_fat,
-    var clear : Int = R.drawable.baseline_restart_alt_24,
+    var clear : Int = R.drawable.clear,
     var equalSign : Int = R.drawable.equal_sign,
     var pi : Int = R.drawable.pi,
     var factorial : Int = R.drawable.factorial,
